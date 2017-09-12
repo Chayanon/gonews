@@ -1,6 +1,13 @@
 {{define "root-body"}}
 <div>
-    Idex Page
+    <a href="/admin/login">Login</a>
+    <br>
+    <!-- {{.}} -->
+    <ul>
+    {{range .List}}
+        <li><a href="/news/{{.ID.Hex}}">{{.Title}}</a></li>
+    {{end}}
+    </ul>
 </div>
 {{end}}
 
