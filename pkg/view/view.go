@@ -25,6 +25,11 @@ func AdminLogin(w http.ResponseWriter, data interface{}) {
 	render(tpAdminLogin, w, data)
 }
 
+// Register reders admin register view
+func AdminRegister(w http.ResponseWriter, data interface{}) {
+	render(tpAdminRegister, w, data)
+}
+
 type AdminListData struct {
 	List []*model.News
 }

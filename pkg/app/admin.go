@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -12,10 +13,53 @@ import (
 
 func adminLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
+		username := r.FormValue("username")
+		password := r.FormValue("password")
+		userID, err := model.Login(username, password)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		fmt.Println(userID)
+		http.SetCookie(w, &http.Cookie{
+			Name:     "user",
+			Value:    userID,
+			MaxAge:   int(10 * time.Minute / time.Second),
+			HttpOnly: true,
+			Path:     "/",
+			// Secure:   true,//httpsOnly open => true
+
+		})
 		http.Redirect(w, r, "/admin/list", http.StatusSeeOther)
 		return
 	}
 	view.AdminLogin(w, nil)
+}
+
+func adminRegister(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		username := r.FormValue("username")
+		password := r.FormValue("password")
+		err := model.Register(username, password)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+	view.AdminRegister(w, nil)
+}
+
+func adminLogout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "user",
+		Value:    "",
+		MaxAge:   -1,
+		Path:     "/",
+		HttpOnly: true,
+	})
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func adminList(w http.ResponseWriter, r *http.Request) {
