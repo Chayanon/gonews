@@ -10,6 +10,15 @@
             <input type="password" name="password">
         </dev>
         <button class="ui submit blue button">Login</button>
+        {{if .Flash.errors}}
+        <div class="ui red message">
+            <ul>
+                {{range .Flash.errors}}
+                <li>{{.}}</li>
+                {{end}}
+            </ul>
+        </div>
+        {{end}}
     </form>
 </div>
 {{end}}

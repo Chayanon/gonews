@@ -2,6 +2,7 @@ package view
 
 import (
 	"net/http"
+	"net/url"
 
 	"github.com/Chayanon/gonews/pkg/model"
 )
@@ -20,9 +21,14 @@ func News(w http.ResponseWriter, data *model.News) {
 	render(tpNews, w, data)
 }
 
+type AdminLoginData struct {
+	Flash url.Values
+}
+
 // AdminLogin reders admin login view
-func AdminLogin(w http.ResponseWriter, data interface{}) {
+func AdminLogin(w http.ResponseWriter, data *AdminLoginData) {
 	render(tpAdminLogin, w, data)
+	data.Flash.Del("errors")
 }
 
 // Register reders admin register view

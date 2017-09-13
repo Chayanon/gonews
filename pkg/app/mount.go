@@ -25,16 +25,19 @@ func Mount(mux *http.ServeMux) {
 
 func onlyAdmin(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie("user")
+		sess := model.GetSession(r)
+
+		// cookie, err := r.Cookie("user")
+		// if err != nil {
+		// 	http.Redirect(w, r, "/", http.StatusFound)
+		// 	// http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		// 	return
+		// }
+		// userID := cookie.Value
+		ok, err := model.CheckUserID(sess.UserID)
 		if err != nil {
 			http.Redirect(w, r, "/", http.StatusFound)
-			// http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-		userID := cookie.Value
-		ok, err := model.CheckUserID(userID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			// http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		if !ok {

@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -12,28 +11,38 @@ import (
 )
 
 func adminLogin(w http.ResponseWriter, r *http.Request) {
+	sess := model.GetSession(r)
 	if r.Method == http.MethodPost {
 		username := r.FormValue("username")
 		password := r.FormValue("password")
 		userID, err := model.Login(username, password)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			sess.Flash.Add("errors", err.Error())
+			sess.Save(w)
+			http.Redirect(w, r, "/login", http.StatusFound)
+			// http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		fmt.Println(userID)
-		http.SetCookie(w, &http.Cookie{
-			Name:     "user",
-			Value:    userID,
-			MaxAge:   int(10 * time.Minute / time.Second),
-			HttpOnly: true,
-			Path:     "/",
-			// Secure:   true,//httpsOnly open => true
+		sess.UserID = userID
+		sess.Save(w)
 
-		})
+		// fmt.Println(userID)
+		// http.SetCookie(w, &http.Cookie{
+		// 	Name:     "user",
+		// 	Value:    userID,
+		// 	MaxAge:   int(10 * time.Minute / time.Second),
+		// 	HttpOnly: true,
+		// 	Path:     "/",
+		// 	// Secure:   true,//httpsOnly open => true
+
+		// })
 		http.Redirect(w, r, "/admin/list", http.StatusSeeOther)
 		return
 	}
-	view.AdminLogin(w, nil)
+	// log.Println(sess.Flash)
+	view.AdminLogin(w, &view.AdminLoginData{
+		Flash: sess.Flash,
+	})
 }
 
 func adminRegister(w http.ResponseWriter, r *http.Request) {
@@ -52,13 +61,16 @@ func adminRegister(w http.ResponseWriter, r *http.Request) {
 }
 
 func adminLogout(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{
-		Name:     "user",
-		Value:    "",
-		MaxAge:   -1,
-		Path:     "/",
-		HttpOnly: true,
-	})
+	sess := model.GetSession(r)
+	sess.UserID = ""
+	sess.Save(w)
+	// http.SetCookie(w, &http.Cookie{
+	// 	Name:     "user",
+	// 	Value:    "",
+	// 	MaxAge:   -1,
+	// 	Path:     "/",
+	// 	HttpOnly: true,
+	// })
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
